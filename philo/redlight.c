@@ -211,7 +211,7 @@ void	init_waiter(t_waiter *waiter, int philo_nbr)
 void *waiter_routine(void *arg)
 {
 	t_waiter *waiter = (t_waiter *)arg;
-	printf("Hello from waiter\n");
+	printf("Hello from waiter. Number of philosophers: %d\n", waiter->number_of_philosophers);
 	return (NULL);
 }
 
