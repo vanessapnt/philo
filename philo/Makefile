@@ -8,7 +8,11 @@ CC = cc
 ###################
 ##SOURCES
 
-SRCS	= redlight.c
+SRCS	= errors.c \
+init.c \
+main.c \
+parsing.c \
+utils.c
 OBJS	= ${SRCS:.c=.o}
 HEADER	= philo.h
 

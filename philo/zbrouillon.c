@@ -133,5 +133,3 @@ while (1)
     philo_sleep();
     philo_think(time_to_wait);  
 } 
-
-
