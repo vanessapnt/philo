@@ -11,18 +11,19 @@ void init_philos(char **argv, t_philo *philos, t_waiter *waiter, pthread_mutex_t
 		philos[i].time_to_eat = ft_atoi(argv[3]);
 		philos[i].time_to_sleep = ft_atoi(argv[4]);
 		if (argv[5])
-			philos[i].time_to_eat = ft_atoi(argv[5]);
+			philos[i].max_eat = ft_atoi(argv[5]);
 		else
-			philos[i].time_to_eat = -1;
+			philos[i].max_eat = -1;
 		philos[i].id = i+1;
         philos[i].start_time = get_current_time();
 		philos[i].eaten_times = 0;
 		philos[i].left_fork = &forks[i];
-		philos[i].right_fork = &forks[i % waiter->number_of_philosophers + 1];
+		philos[i].right_fork = &forks[(i + 1) % waiter->number_of_philosophers];
         philos[i].write_mutex = &waiter->write_mutex;
 		//philos[i].dead = &waiter->dead_flag;
 		i++;
 	}
+	//fprintf(stderr, "%d %d %d\n", philos[0].id, philos[1].id, philos[2].id);
 }
 
 void init_forks(pthread_mutex_t	*forks, int philo_nbr)

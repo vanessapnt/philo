@@ -9,23 +9,6 @@
 
 #define PHILO_MAX 200
 
-typedef struct s_philo
-{
-	pthread_t	philo_thread;
-	int time_to_die;
-	int time_to_eat;
-	int time_to_sleep;
-	int number_of_times_each_philosopher_must_eat;
-	int id;
-    size_t			start_time;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
-	pthread_mutex_t dead;
-	pthread_mutex_t stomach;
-    pthread_mutex_t	*write_mutex;
-	int eaten_times;
-}	t_philo;
-
 typedef struct s_waiter
 {
 	pthread_t	waiter_thread;
@@ -34,6 +17,24 @@ typedef struct s_waiter
 	pthread_mutex_t	dead_mutex;
     pthread_mutex_t	write_mutex;
 }	t_waiter;
+
+typedef struct s_philo
+{
+	pthread_t	philo_thread;
+	int time_to_die;
+	int time_to_eat;
+	int time_to_sleep;
+	int max_eat;
+	int id;
+    size_t			start_time;
+	pthread_mutex_t	*left_fork;
+	pthread_mutex_t	*right_fork;
+	pthread_mutex_t dead;
+	pthread_mutex_t stomach;
+    pthread_mutex_t	*write_mutex;
+	int eaten_times;
+    t_waiter waiter;
+}	t_philo;
 
 //PARSING//
 typedef enum e_error

@@ -24,22 +24,32 @@ void	print_state_change(t_philo *philos, char *str)
 	time = get_current_time() - philos->start_time;
 	//if (!dead_loop(philo))
 	printf("%zu %d %s\n", time, philos->id, str);
-	pthread_mutex_unlock(philo->write_mutex);
+	pthread_mutex_unlock(philos->write_mutex);
 }
 
-static void	philo_thinks(t_philo *philos)
+static void	philo_thinks(t_philo *philos, int time)
 {
 	print_state_change(philos, "is thinking");
+	usleep(time * 1000);
 }
 
-static void	philo_sleeps(t_philo *philos)
+static void	philo_sleeps(t_philo *philos, int time)
 {
 	print_state_change(philos, "is sleeping");
+	//printf("%d\n", philos->time_to_sleep * 1000);
+	usleep(time * 1000);
 }
 
-static void	philo_eats(t_philo *philos)
+static void	philo_eats(t_philo *philos, int time)
 {
+	pthread_mutex_lock(philos->left_fork);
+	print_state_change(philos, "has taken a fork");
+	pthread_mutex_lock(philos->right_fork);
+	print_state_change(philos, "has taken a fork");
 	print_state_change(philos, "is eating");
+	usleep(time * 1000);
+	pthread_mutex_unlock(philos->left_fork);
+	pthread_mutex_unlock(philos->right_fork);
 }
 
 void *waiter_routine(void *arg)
@@ -52,39 +62,40 @@ void *waiter_routine(void *arg)
 void *philo_routine(void *arg)
 {
 	t_philo *philos = (t_philo *)arg;
-	printf("Hello from %d philo\n", philos->id);
-	philo_eats(philos);
-	philo_sleeps(philos);
-	philo_thinks(philos);
-
-	/*
-	//REDLIGHT//
-	//EVEN_PHILO_NB
-	time_to_wait = time_to_eat - time_to_sleep;
-	if (time_to_wait < 0)
-		time_to_wait = 0;
-	if (i % 2 == 0)//even id
-		philo_philo_thinks(time_to_eat);
-	while (1)
+	int	time_to_wait;
+	int	i = philos->id;
+	fprintf(stderr, "hello from %d\n", i);
+	if (philos->waiter.number_of_philosophers % 2 == 0)
 	{
-		philo_philo_eats();
-		philo_philo_sleeps();
-		philo_philo_thinks(time_to_wait);  
+		time_to_wait = philos->time_to_eat - philos->time_to_sleep;
+		if (time_to_wait < 0)
+			time_to_wait = 0;
+		if (i % 2 == 0)//even id
+			philo_thinks(philos, philos->time_to_eat);
+		while (1)
+		{
+			philo_eats(philos, philos->time_to_eat);
+			philo_sleeps(philos, philos->time_to_sleep);
+			philo_thinks(philos, time_to_wait);  
+		}
 	}
-
-	//ODD_PHILO_NB
-	time_to_wait = time_to_eat * 2 - time_to_sleep;
-	if (i == 1)
-		philo_philo_thinks(time_to_eat * 2);
-	else if (i % 2 != 0)
-		philo_philo_thinks(time_to_eat);
-	while (1)
+	else
 	{
-		philo_philo_eats();
-		philo_philo_sleeps();
-		philo_philo_thinks(time_to_wait);  
+		time_to_wait = philos->time_to_eat * 2 - philos->time_to_sleep;
+		fprintf(stderr, "time to wait %d\n", time_to_wait);
+		fprintf(stderr, "time to eat %d\n", philos->time_to_eat);
+		fprintf(stderr, "time to sleep %d\n", philos->time_to_sleep);
+		if (i == 1)
+			philo_thinks(philos, philos->time_to_eat * 2);
+		else if (i % 2 == 0)
+			philo_thinks(philos, philos->time_to_eat);
+		while (1)
+		{
+			philo_eats(philos, philos->time_to_eat);
+			philo_sleeps(philos, philos->time_to_sleep);
+			philo_thinks(philos, time_to_wait);  
+		}
 	}
-	*/
 	return (NULL);
 }
 
@@ -115,12 +126,19 @@ int	main(int argc, char **argv)
 	t_philo			philos[PHILO_MAX];
 	t_waiter		waiter;
 	pthread_mutex_t	forks[PHILO_MAX];
+	int j = -1;
+	while(j <= 3)
+	{
+		////printf("fork %d = %p", j, (void*)&forks[j]);
+		j++;
+	}
 	int i;
 
 	parsing(argc, argv);
 	init_waiter(&waiter, ft_atoi(argv[1]));
 	init_forks(forks, waiter.number_of_philosophers);
 	init_philos(argv, philos, &waiter, forks);
+	fprintf(stderr, "%d %d %d\n", philos[0].id, philos[1].id, philos[2].id);
 	dinner(philos, &waiter);
 
 	if (pthread_join(waiter.waiter_thread, NULL) != 0)
