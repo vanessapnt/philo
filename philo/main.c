@@ -20,11 +20,11 @@ void	print_state_change(t_philo *philos, char *str)
 {
 	size_t	time;
 
-	pthread_mutex_lock(philos->write_mutex);
+	pthread_mutex_lock(&philos->waiter.write_mutex);
 	time = get_current_time() - philos->start_time;
 	//if (!dead_loop(philo))
 	printf("%zu %d %s\n", time, philos->id, str);
-	pthread_mutex_unlock(philos->write_mutex);
+	pthread_mutex_unlock(&philos->waiter.write_mutex);
 }
 
 static void	philo_thinks(t_philo *philos, int time)
@@ -48,6 +48,13 @@ static void	philo_eats(t_philo *philos, int time)
 	print_state_change(philos, "has taken a fork");
 	print_state_change(philos, "is eating");
 	usleep(time * 1000);
+	philos->eaten_times++;
+	if (philos->eaten_times == philos->max_eat)
+	{
+		pthread_mutex_lock(philos->waiter.full_mutex);
+		philos->waiter.philos_full++;
+		pthread_mutex_unlock(philos->waiter.full_mutex);
+	}
 	pthread_mutex_unlock(philos->left_fork);
 	pthread_mutex_unlock(philos->right_fork);
 }
@@ -56,7 +63,8 @@ void *waiter_routine(void *arg)
 {
 	t_waiter *waiter = (t_waiter *)arg;
 	printf("Hello from waiter. Number of philosophers: %d\n", waiter->number_of_philosophers);
-	return (NULL);
+
+	return (arg);
 }
 
 void *philo_routine(void *arg)
@@ -96,7 +104,7 @@ void *philo_routine(void *arg)
 			philo_thinks(philos, time_to_wait);  
 		}
 	}
-	return (NULL);
+	return (arg);
 }
 
 void	dinner(t_philo *philos, t_waiter *waiter)
