@@ -22,7 +22,7 @@ void	print_state_change(t_philo *philos, char *str)
 
 	pthread_mutex_lock(&philos->waiter.write_mutex);
 	time = get_current_time() - philos->start_time;
-	//if (!dead_loop(philo))
+	//if (!*philo->dead)
 	printf("%zu %d %s\n", time, philos->id, str);
 	pthread_mutex_unlock(&philos->waiter.write_mutex);
 }
@@ -48,6 +48,8 @@ static void	philo_eats(t_philo *philos, int time)
 	print_state_change(philos, "has taken a fork");
 	print_state_change(philos, "is eating");
 	usleep(time * 1000);
+	pthread_mutex_lock(philos->stomach);
+	philos->last_meal = get_current_time();
 	philos->eaten_times++;
 	if (philos->eaten_times == philos->max_eat)
 	{
@@ -55,18 +57,99 @@ static void	philo_eats(t_philo *philos, int time)
 		philos->waiter.philos_full++;
 		pthread_mutex_unlock(philos->waiter.full_mutex);
 	}
+	pthread_mutex_unlock(philos->stomach);
 	pthread_mutex_unlock(philos->left_fork);
 	pthread_mutex_unlock(philos->right_fork);
 }
 
+int	philo_starved(t_philo *philo, size_t time_to_die)
+{
+	pthread_mutex_lock(philo->stomach);
+	if (get_current_time() - philo->last_meal >= time_to_die)
+	{
+		pthread_mutex_unlock(philo->stomach)
+		return (1);
+	}
+	pthread_mutex_unlock(philo->stomach);
+	return (0);
+}
+
+int	philo_dead(t_philo *philos)
+{
+	int	i;
+
+	i = 0;
+	while (i < philos->waiter.number_of_philosophers)
+	{
+		if (philo_starved(&philos[i], philos[i].time_to_die))
+		{
+			print_state_change(&philos[i], "died");
+			pthread_mutex_lock(philos[0].dead_lock);
+			*philos->dead = true;
+			pthread_mutex_unlock(philos[0].dead_lock);
+			return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+int	everyone_full(t_philo *philos)
+{
+	pthread_mutex_lock(philo->waiter.full_mutex);
+	if (philos->waiter.philos_full == philos->waiter.number_of_philosophers)
+	{
+		pthread_mutex_unlock(philo->waiter.full_mutex);
+		return(1);
+	}
+	pthread_mutex_unlock(philo->waiter.full_mutex);
+	return(0);
+}
+
 void *waiter_routine(void *arg)
 {
-	t_waiter *waiter = (t_waiter *)arg;
-	printf("Hello from waiter. Number of philosophers: %d\n", waiter->number_of_philosophers);
-
+	t_philo *philos = (t_philo *)arg;
+	printf("Hello from waiter. Number of philosophers: %d\n", philos->waiter.number_of_philosophers);
+	while(1)
+	{
+		if(everyone_full(philos) || philo_dead(philos))
+		{
+			philos->waiter.time_to_stop = true;
+			break;
+		}
+	}
 	return (arg);
 }
 
+int	must_stop(t_philo *philos)
+{
+	pthread_mutex_lock(philos->dead_mutex);
+	if (*philo->time_to_stop == true)
+	{
+		pthread_mutex_unlock(philo->dead_mutex);
+		return (1);
+	}
+	pthread_mutex_unlock(philos->dead_mutex);
+	return (0);
+}
+
+void	*philo_routine(void *arg)
+{
+	t_philo	*philos;
+
+	philos = (t_philo *)arg;
+	if (philos->id % 2 == 0)
+		ft_usleep(1);
+	while (!mustdie(philos))
+	{
+		philo_eats(philos);
+		philo_dreams(philos);
+		philo_thinks(philos);
+	}
+	return (arg);
+}
+
+/*
 void *philo_routine(void *arg)
 {
 	t_philo *philos = (t_philo *)arg;
@@ -106,11 +189,12 @@ void *philo_routine(void *arg)
 	}
 	return (arg);
 }
+*/
 
 void	dinner(t_philo *philos, t_waiter *waiter)
 {
 	int	i;
-	if (pthread_create(&waiter->waiter_thread, NULL, &waiter_routine, waiter) != 0)
+	if (pthread_create(&waiter->waiter_thread, NULL, &waiter_routine, philos) != 0)
 	{
 		perror("Failed to create thread");
 		exit(1);

@@ -16,24 +16,26 @@ typedef struct s_waiter
     pthread_mutex_t	write_mutex;
 	pthread_mutex_t	full_mutex;
     int             number_of_philosophers;
-	bool            dead_flag;
-    int             philos_full
+	bool            time_to_stop;
+    int             philos_full;
 }	t_waiter;
 
 typedef struct s_philo
 {
 	pthread_t       philo_thread;
-	int             time_to_die;
+	int             id;
+    int             time_to_die;
 	int             time_to_eat;
 	int             time_to_sleep;
 	int             max_eat;
-	int             id;
+    int             eaten_times;
+    bool            dead;
     size_t			start_time;
+    size_t          last_meal;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	pthread_mutex_t dead;
 	pthread_mutex_t stomach;
-	int             eaten_times;
     t_waiter        waiter;
 }	t_philo;
 
