@@ -22,23 +22,21 @@ typedef struct s_waiter
 
 typedef struct s_philo
 {
-	pthread_t       philo_thread;
-	int             id;
+    pthread_t       philo_thread;
+    int             id;
     int             time_to_die;
-	int             time_to_eat;
-	int             time_to_sleep;
-	int             max_eat;
+    int             time_to_eat;
+    int             time_to_sleep;
+    int             max_eat;
     int             eaten_times;
     bool            dead;
-    size_t			start_time;
+    size_t          start_time;
     size_t          last_meal;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
-	pthread_mutex_t dead;
-	pthread_mutex_t stomach;
-    t_waiter        waiter;
-}	t_philo;
-
+    pthread_mutex_t *left_fork;
+    pthread_mutex_t *right_fork;
+    pthread_mutex_t stomach;
+    t_waiter        *waiter;
+}   t_philo;
 //PARSING//
 typedef enum e_error
 {
@@ -64,3 +62,4 @@ int	ft_isblank(int c);
 
 size_t	get_current_time(void);
 void	print_state_change(t_philo *philo, char *str);
+int	must_stop(t_philo *philos);
