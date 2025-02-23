@@ -14,6 +14,10 @@ void init_philos(char **argv, t_philo *philos, t_waiter *waiter, pthread_mutex_t
             philos[i].max_eat = ft_atoi(argv[5]);
         else
             philos[i].max_eat = -1;
+        if (philos[i].time_to_eat > philos[i].time_to_sleep)
+		    philos[i].time_to_think = (philos[i].time_to_eat - philos[i].time_to_sleep) + 1;
+        else
+		    philos[i].time_to_think = 1;
         philos[i].id = i + 1;
         philos[i].start_time = get_current_time();
         philos[i].last_meal = philos[i].start_time;

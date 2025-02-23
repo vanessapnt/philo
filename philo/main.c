@@ -7,106 +7,165 @@ struct timeval {
 };
 */
 
-size_t	get_current_time(void)
+long long get_current_time(void)
 {
-	struct timeval	time;
-
-	if (gettimeofday(&time, NULL) == -1)
-		write(2, "error with gettimeofday()\n", 26);
-	return (time.tv_sec * 1000 + time.tv_usec / 1000); //converts to ms
+    struct timeval tv;
+    if (gettimeofday(&tv, NULL) == -1)
+        return (-1);
+    return ((tv.tv_sec) * (long long)1000 + (tv.tv_usec) / 1000);
 }
 
 void print_state_change(t_philo *philos, char *str)
 {
-    size_t time;
+    long long time;
     
     pthread_mutex_lock(&philos->waiter->write_mutex);
     if (!must_stop(philos))
     {
         time = get_current_time() - philos->start_time;
-        printf("%zu %d %s\n", time, philos->id, str);
+        printf("%lld %d %s\n", time, philos->id, str);
     }
     pthread_mutex_unlock(&philos->waiter->write_mutex);
 }
-/*
-void	philo_thinks(t_philo *philos)
-{
-	print_state_change(philos, "is thinking");
+
+int manage_time(t_philo *philos, int time_to_wait) {
+    long long start_time;
+    long long elapsed_time;
+
+    start_time = get_current_time();
+    while (1) {
+        usleep(50);
+        elapsed_time = get_current_time() - start_time;
+        if (elapsed_time >= time_to_wait)
+            break;
+        if (must_stop(philos)) {
+            return (1);
+        }
+    }
+	usleep(500);
+    return (0);
 }
 
-void	philo_sleeps(t_philo *philos)
-{
-	print_state_change(philos, "is sleeping");
-	//printf("%d\n", philos->time_to_sleep * 1000);
-	usleep(philos->time_to_sleep * 1000);
-}
-
-void	philo_eats(t_philo *philos)
-{
-	pthread_mutex_lock(philos->left_fork);
-	print_state_change(philos, "has taken a fork");
-	pthread_mutex_lock(philos->right_fork);
-	print_state_change(philos, "has taken a fork");
-	print_state_change(philos, "is eating");
-	usleep(philos->time_to_eat * 1000);
-	pthread_mutex_lock(&philos->stomach);
-	philos->last_meal = get_current_time();
-	philos->eaten_times++;
-	if (philos->eaten_times == philos->max_eat)
-	{
-		pthread_mutex_lock(&philos->waiter->full_mutex);
-		philos->waiter->philos_full++;
-		pthread_mutex_unlock(&philos->waiter->full_mutex);
-	}
-	pthread_mutex_unlock(&philos->stomach);
-	pthread_mutex_unlock(philos->left_fork);
-	pthread_mutex_unlock(philos->right_fork);
-}
-*/
-
-int philo_thinks(t_philo *philos, int time_to_wait)
+int philo_thinks(t_philo *philos, int time_to_think)
 {
     if (must_stop(philos))
-        return (0);
+        return (1);
     print_state_change(philos, "is thinking​​💭​");
-    if (time_to_wait > 0)
-        usleep(time_to_wait * 1000);
-    return (1);
+	if (manage_time(philos, time_to_think) != 0) {
+        return (1);
+    }
+    return (0);
 }
 
 int philo_sleeps(t_philo *philos, int time_to_sleep)
 {
     if (must_stop(philos))
-        return (0);
+        return (1);
     print_state_change(philos, "is sleeping​💤​");
-    usleep(time_to_sleep * 1000);
-    return (1);
+    if (manage_time(philos, time_to_sleep) != 0) {
+        return (1);
+    }
+    return (0);
 }
 
+void lock_forks(t_philo *philos) {
+    if (philos->id % 2 == 1) {
+		usleep(100);
+        pthread_mutex_lock(philos->left_fork);
+		print_state_change(philos, "has taken a fork");
+        pthread_mutex_lock(philos->right_fork);
+		print_state_change(philos, "has taken a fork");
+    } else {
+        pthread_mutex_lock(philos->right_fork);
+		print_state_change(philos, "has taken a fork");
+        pthread_mutex_lock(philos->left_fork);
+		print_state_change(philos, "has taken a fork");
+    }
+}
+
+void unlock_forks(t_philo *philos) {
+	usleep(100);
+    pthread_mutex_unlock(philos->left_fork);
+    pthread_mutex_unlock(philos->right_fork);
+}
+
+/*
 int philo_eats(t_philo *philos, int time_to_eat)
 {
     if (must_stop(philos))
-        return (0);
-    pthread_mutex_lock(philos->left_fork);
-    print_state_change(philos, "has taken a fork");
-    pthread_mutex_lock(philos->right_fork);
-    print_state_change(philos, "has taken a fork");
-    print_state_change(philos, "is eating🍖​");
-    
+        return (1);
+    if (philos->waiter->number_of_philosophers == 1)
+	{
+        pthread_mutex_lock(philos->left_fork);
+        print_state_change(philos, "has taken a fork");
+        pthread_mutex_unlock(philos->left_fork);
+        return (1);
+    }
+    lock_forks(philos);
     pthread_mutex_lock(&philos->stomach);
     philos->last_meal = get_current_time();
-    philos->eaten_times++;
     pthread_mutex_unlock(&philos->stomach);
-    
+    if (must_stop(philos))
+	{
+        unlock_forks(philos);
+        return (1);
+    }
+    print_state_change(philos, "is eating🍖");
+    pthread_mutex_lock(&philos->stomach);
+    philos->eaten_times++;
+    if (philos->max_eat != -1 && philos->eaten_times >= philos->max_eat)
+	{
+        pthread_mutex_lock(&philos->waiter->full_mutex);
+        philos->waiter->philos_full++;
+        pthread_mutex_unlock(&philos->waiter->full_mutex);
+    }
+    pthread_mutex_unlock(&philos->stomach);
     usleep(time_to_eat * 1000);
-    pthread_mutex_unlock(philos->left_fork);
-    pthread_mutex_unlock(philos->right_fork);
-    return (1);
+    unlock_forks(philos);
+    return (0);
+}
+*/
+
+int philo_eats(t_philo *philos, int time_to_eat) {
+    if (must_stop(philos))
+        return (1);
+    if (philos->waiter->number_of_philosophers == 1)
+	{
+        pthread_mutex_lock(philos->left_fork);
+        print_state_change(philos, "has taken a fork");
+        pthread_mutex_unlock(philos->left_fork);
+        return (1);
+    }
+    lock_forks(philos);
+    pthread_mutex_lock(&philos->stomach);
+    philos->last_meal = get_current_time();
+    pthread_mutex_unlock(&philos->stomach);
+    if (must_stop(philos)) {
+        unlock_forks(philos);
+        return (1);
+    }
+    print_state_change(philos, "is eating🍖");
+    pthread_mutex_lock(&philos->stomach);
+    philos->eaten_times++;
+    if (philos->max_eat != -1 && philos->eaten_times >= philos->max_eat) {
+        pthread_mutex_lock(&philos->waiter->full_mutex);
+        philos->waiter->philos_full++;
+        pthread_mutex_unlock(&philos->waiter->full_mutex);
+    }
+    pthread_mutex_unlock(&philos->stomach);
+
+    if (manage_time(philos, time_to_eat) != 0) {
+        unlock_forks(philos);
+        return (1);
+    }
+    unlock_forks(philos);
+    return (0);
 }
 
-int philo_starved(t_philo *philos, size_t time_to_die)
+
+int philo_starved(t_philo *philos, long long time_to_die)
 {
-    size_t time_since_last_meal;
+    long long time_since_last_meal;
     
     pthread_mutex_lock(&philos->stomach);
     time_since_last_meal = get_current_time() - philos->last_meal;
@@ -159,9 +218,9 @@ void *waiter_routine(void *arg)
 			pthread_mutex_unlock(&philos->waiter->dead_mutex);
 			break;
 		}
-		usleep(100);
+		usleep(1000);
 	}
-	return (arg);
+	return (NULL);
 }
 
 int	must_stop(t_philo *philos)
@@ -175,7 +234,7 @@ int	must_stop(t_philo *philos)
 	pthread_mutex_unlock(&philos->waiter->dead_mutex);
 	return (0);
 }
-/*
+
 void	*philo_routine(void *arg)
 {
 	t_philo	*philos;
@@ -183,103 +242,24 @@ void	*philo_routine(void *arg)
 	philos = (t_philo *)arg;
 	if (philos->id % 2 == 0)
 		usleep(1000);
+	if (philos->waiter->number_of_philosophers == 1)
+	{
+        pthread_mutex_lock(philos->left_fork);
+        print_state_change(philos, "has taken a fork");
+        pthread_mutex_unlock(philos->left_fork);
+        return (NULL);
+    }
 	while (!must_stop(philos))
 	{
-		philo_eats(philos);
-		philo_sleeps(philos);
-		philo_thinks(philos);
+        if (philo_eats(philos, philos->time_to_eat))
+			break; 
+        if (philo_sleeps(philos, philos->time_to_sleep))
+			break;
+        if (philo_thinks(philos, philos->time_to_think))
+			break;
 	}
-	return (arg);
+	return (NULL);
 }
-*/
-
-void *philo_routine(void *arg)
-{
-    t_philo *philos = (t_philo *)arg;
-    int time_to_wait;
-    int i = philos->id;
-    
-    if (philos->waiter->number_of_philosophers % 2 == 0)
-    {
-        time_to_wait = philos->time_to_eat - philos->time_to_sleep;
-        if (time_to_wait < 0)
-            time_to_wait = 0;
-        
-        if (i % 2 == 0) //even id
-            usleep(philos->time_to_eat * 1000); // Juste attendre au lieu de "think"
-            
-        while (!must_stop(philos))
-        {
-            if (!philo_eats(philos, philos->time_to_eat))
-                break;
-            if (!philo_sleeps(philos, philos->time_to_sleep))
-                break;
-            if (!philo_thinks(philos, 0)) // Ne pas attendre pendant thinking
-                break;
-        }
-    }
-    else
-    {
-        time_to_wait = philos->time_to_eat * 2 - philos->time_to_sleep;        
-        if (i == 1)
-            usleep((philos->time_to_eat * 2) * 1000); // Juste attendre
-        else if (i % 2 == 0)
-            usleep(philos->time_to_eat * 1000); // Juste attendre
-        
-        while (!must_stop(philos))
-        {
-            if (!philo_eats(philos, philos->time_to_eat))
-                break;
-            if (!philo_sleeps(philos, philos->time_to_sleep))
-                break;
-            if (!philo_thinks(philos, 0)) // Ne pas attendre pendant thinking
-                break;
-        }
-    }
-    return (arg);
-}
-
-/*
-void *philo_routine(void *arg)
-{
-	t_philo *philos = (t_philo *)arg;
-	int	time_to_wait;
-	int	i = philos->id;
-	fprintf(stderr, "hello from %d\n", i);
-	if (philos->waiter->number_of_philosophers % 2 == 0)
-	{
-		time_to_wait = philos->time_to_eat - philos->time_to_sleep;
-		if (time_to_wait < 0)
-			time_to_wait = 0;
-		if (i % 2 == 0)//even id
-			philo_thinks(philos, philos->time_to_eat);
-		while (1)
-		{
-			philo_eats(philos, philos->time_to_eat);
-			philo_sleeps(philos, philos->time_to_sleep);
-			philo_thinks(philos, time_to_wait);  
-		}
-	}
-	else
-	{
-		time_to_wait = philos->time_to_eat * 2 - philos->time_to_sleep;
-		fprintf(stderr, "time to wait %d\n", time_to_wait);
-		fprintf(stderr, "time to eat %d\n", philos->time_to_eat);
-		fprintf(stderr, "time to sleep %d\n", philos->time_to_sleep);
-		if (i == 1)
-			philo_thinks(philos, philos->time_to_eat * 2);
-		else if (i % 2 == 0)
-			philo_thinks(philos, philos->time_to_eat);
-		while (1)
-		{
-			philo_eats(philos, philos->time_to_eat);
-			philo_sleeps(philos, philos->time_to_sleep);
-			philo_thinks(philos, time_to_wait);  
-		}
-	}
-	return (arg);
-}
-*/
 
 void	dinner(t_philo *philos, t_waiter *waiter)
 {

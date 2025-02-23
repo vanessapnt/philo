@@ -27,11 +27,12 @@ typedef struct s_philo
     int             time_to_die;
     int             time_to_eat;
     int             time_to_sleep;
+    int             time_to_think;
     int             max_eat;
     int             eaten_times;
     bool            dead;
-    size_t          start_time;
-    size_t          last_meal;
+    long long          start_time;
+    long long          last_meal;
     pthread_mutex_t *left_fork;
     pthread_mutex_t *right_fork;
     pthread_mutex_t stomach;
@@ -60,6 +61,6 @@ void    parsing(int argc, char **argv);
 int	ft_isdigit(char c);
 int	ft_isblank(int c);
 
-size_t	get_current_time(void);
+long long	get_current_time(void);
 void	print_state_change(t_philo *philo, char *str);
 int	must_stop(t_philo *philos);
