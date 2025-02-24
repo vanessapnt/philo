@@ -1,16 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/24 18:58:13 by varodrig          #+#    #+#             */
+/*   Updated: 2025/02/24 18:59:45 by varodrig         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-long ft_atol(const char *nptr)
+long	ft_atol(const char *nptr)
 {
-	int i = 0;
-	long num = 0;
+	int		i;
+	long	num;
 
+	i = 0;
+	num = 0;
 	while (ft_isblank(nptr[i]) == 1 || nptr[i] == '+')
 		i++;
-
 	while (nptr[i] >= '0' && nptr[i] <= '9')
 	{
-		if (num > LONG_MAX / 10 || (num == LONG_MAX / 10 && (nptr[i] - '0') > 7))
+		if (num > LONG_MAX / 10 || (num == LONG_MAX / 10 && (nptr[i]
+					- '0') > 7))
 			ft_err(LIMIT_INT_MAX);
 		num = num * 10 + (nptr[i] - '0');
 		i++;
@@ -18,7 +32,7 @@ long ft_atol(const char *nptr)
 	return (num);
 }
 
-int	ft_atoi(const char *nptr) ///TO CHANGE TO LIBFT
+int	ft_atoi(const char *nptr)
 {
 	int	i;
 	int	result;
