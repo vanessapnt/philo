@@ -56,6 +56,7 @@ void	init_waiter(t_waiter *waiter, int philo_nbr);
 
 long ft_atol(const char *nptr);
 int	ft_atoi(const char *nptr);
+void	ft_putstr_fd(char *s, int fd);
 
 void    parsing(int argc, char **argv);
 int	ft_isdigit(char c);
