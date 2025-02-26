@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:57 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 18:59:34 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/26 17:27:24 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	philo_thinks(t_philo *philos, int time_to_think)
 {
 	if (must_stop(philos))
 		return (1);
-	print_state_change(philos, "is thinking​​💭​");
+	print_state_change(philos, "is thinking");
 	if (manage_time(philos, time_to_think) != 0)
 	{
 		return (1);
@@ -28,7 +28,7 @@ int	philo_sleeps(t_philo *philos, int time_to_sleep)
 {
 	if (must_stop(philos))
 		return (1);
-	print_state_change(philos, "is sleeping​💤​");
+	print_state_change(philos, "is sleeping");
 	if (manage_time(philos, time_to_sleep) != 0)
 	{
 		return (1);

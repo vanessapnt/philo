@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:52 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 18:59:00 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/26 17:16:00 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,6 @@ void	parsing(int argc, char **argv)
 	}
 	if (ft_atoi(argv[1]) > 200)
 		ft_err(NB_PHILO);
+	if (ft_atoi(argv[1]) == 0)
+		ft_err(ZERO_PHILO);
 }

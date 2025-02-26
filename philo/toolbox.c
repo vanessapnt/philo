@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:20:51 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 19:54:00 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/26 17:17:28 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ void	ft_err(t_error error)
 		ft_putstr_fd("The arguments contain invalid characters.\n", 2);
 	else if (error == LIMIT_INT_MAX)
 		ft_putstr_fd("The values must be lower than INT_MAX.\n", 2);
+	else if (error == ZERO_PHILO)
+		ft_putstr_fd("There should be someone at the party.\n", 2);
 	exit(EXIT_FAILURE);
 }
 

@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:18 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 18:59:51 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/26 20:03:10 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,16 @@ int	philo_starved(t_philo *philos, long long time_to_die)
 	return (time_since_last_meal >= time_to_die);
 }
 
+int	is_eating(t_philo *philos)
+{
+	int	eating_status;
+
+	pthread_mutex_lock(&philos->waiter->eating_mutex);
+	eating_status = philos->is_eating;
+	pthread_mutex_unlock(&philos->waiter->eating_mutex);
+	return (eating_status);
+}
+
 int	philo_dead(t_philo *philos)
 {
 	int	i;
@@ -29,9 +39,10 @@ int	philo_dead(t_philo *philos)
 	i = 0;
 	while (i < philos->waiter->number_of_philosophers)
 	{
-		if (philo_starved(&philos[i], philos[i].time_to_die))
+		if (philo_starved(&philos[i], philos[i].time_to_die)
+			&& is_eating(&philos[i]) == 0)
 		{
-			print_state_change(&philos[i], "died​​​☠️​");
+			print_state_change(&philos[i], "died");
 			pthread_mutex_lock(&philos->waiter->dead_mutex);
 			philos->dead = true;
 			pthread_mutex_unlock(&philos->waiter->dead_mutex);

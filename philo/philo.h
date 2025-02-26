@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:03 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 19:02:47 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/26 20:56:57 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct s_waiter
 	pthread_mutex_t	dead_mutex;
 	pthread_mutex_t	write_mutex;
 	pthread_mutex_t	full_mutex;
+	pthread_mutex_t	eating_mutex;
 	int				number_of_philosophers;
 	bool			time_to_stop;
 	int				philos_full;
@@ -43,6 +44,7 @@ typedef struct s_philo
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				time_to_think;
+	bool			is_eating;
 	int				max_eat;
 	int				eaten_times;
 	bool			dead;
@@ -60,7 +62,8 @@ typedef enum e_error
 	VALUES_TOO_LOW,
 	NB_ARGS,
 	DIGITS_ARGS,
-	LIMIT_INT_MAX
+	LIMIT_INT_MAX,
+	ZERO_PHILO
 }					t_error;
 
 void				lock_forks(t_philo *philos);
@@ -69,11 +72,12 @@ int					philo_eats(t_philo *philos, int time_to_eat);
 
 void				init_philos(char **argv, t_philo *philos, t_waiter *waiter,
 						pthread_mutex_t *forks);
-void				init_forks(pthread_mutex_t *forks, int philo_nbr);
+void				init_forks(pthread_mutex_t *forks, int philo_nbr,
+						t_waiter *waiter);
 void				init_waiter(t_waiter *waiter, int philo_nbr);
 
 void				clean_mutexes(char *str, t_waiter *waiter, t_philo *philos,
-						pthread_mutex_t *forks);
+						pthread_mutex_t *forks, int mode);
 void				dinner(t_philo *philos, t_waiter *waiter,
 						pthread_mutex_t *forks);
 int					main(int argc, char **argv);
