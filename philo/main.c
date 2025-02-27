@@ -6,23 +6,19 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:42 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/26 20:54:51 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 12:51:40 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	clean_mutexes(char *str, t_waiter *waiter, t_philo *philos,
-		pthread_mutex_t *forks, int mode)
+void	clean_error(char *str, t_waiter *waiter, pthread_mutex_t *forks,
+		int mode)
 {
 	int	i;
 
-	i = 0;
 	if (str)
-	{
-		ft_putstr_fd(str, 2);
-		ft_putstr_fd("\n", 2);
-	}
+		write_error(str);
 	if (mode >= 1)
 		pthread_mutex_destroy(&waiter->full_mutex);
 	if (mode >= 2)
@@ -31,18 +27,39 @@ void	clean_mutexes(char *str, t_waiter *waiter, t_philo *philos,
 		pthread_mutex_destroy(&waiter->dead_mutex);
 	if (mode >= 4)
 		pthread_mutex_destroy(&waiter->eating_mutex);
-	if (philos)
+	i = 0;
+	if (mode >= 5)
 	{
-		
 		while (i < waiter->number_of_philosophers)
 		{
 			pthread_mutex_destroy(&forks[i]);
-			if(mode >= 5)
-				pthread_mutex_destroy(&philos[i].stomach);
 			i++;
 		}
 	}
+	if (mode >= 6)
+		return ;
 	exit(1);
+}
+
+static void	ft_join(t_waiter *waiter, t_philo *philos, pthread_mutex_t *forks)
+{
+	int	i;
+
+	i = 0;
+	if (pthread_join(waiter->waiter_thread, NULL) != 0)
+	{
+		clean_error("Error : Failed to join threads", waiter, forks, 6);
+		clean_remaining(philos, waiter);
+	}
+	while (i < waiter->number_of_philosophers)
+	{
+		if (pthread_join(philos[i].philo_thread, NULL) != 0)
+		{
+			clean_error("Error : Failed to join threads", waiter, forks, 6);
+			clean_remaining(philos, waiter);
+		}
+		i++;
+	}
 }
 
 void	dinner(t_philo *philos, t_waiter *waiter, pthread_mutex_t *forks)
@@ -51,27 +68,22 @@ void	dinner(t_philo *philos, t_waiter *waiter, pthread_mutex_t *forks)
 
 	if (pthread_create(&waiter->waiter_thread, NULL, &waiter_routine,
 			philos) != 0)
-		clean_mutexes("Error : Failed to create threads", waiter, philos,
-			forks, 5);
+	{
+		clean_error("Error : Failed to create threads", waiter, forks, 6);
+		clean_remaining(philos, waiter);
+	}
 	i = 0;
 	while (i < waiter->number_of_philosophers)
 	{
 		if (pthread_create(&philos[i].philo_thread, NULL, &philo_routine,
 				&philos[i]) != 0)
-			clean_mutexes("Error : Failed to create threads", waiter, philos,
-				forks, 5);
+		{
+			clean_error("Error : Failed to create threads", waiter, forks, 6);
+			clean_remaining(philos, waiter);
+		}
 		i++;
 	}
-	i = 0;
-	if (pthread_join(waiter->waiter_thread, NULL) != 0)
-		clean_mutexes("Error : Failed to join threads", waiter, philos, forks, 5);
-	while (i < waiter->number_of_philosophers)
-	{
-		if (pthread_join(philos[i].philo_thread, NULL) != 0)
-			clean_mutexes("Error : Failed to join threads", waiter, philos,
-				forks, 5);
-		i++;
-	}
+	ft_join(waiter, philos, forks);
 }
 
 int	main(int argc, char **argv)
@@ -85,6 +97,7 @@ int	main(int argc, char **argv)
 	init_forks(forks, waiter.number_of_philosophers, &waiter);
 	init_philos(argv, philos, &waiter, forks);
 	dinner(philos, &waiter, forks);
-	clean_mutexes(NULL, &waiter, philos, forks, 5);
+	clean_error(NULL, &waiter, forks, 6);
+	clean_remaining(philos, &waiter);
 	return (0);
 }

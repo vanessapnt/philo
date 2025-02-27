@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:38 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/26 20:46:22 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 12:43:56 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,19 +46,18 @@ void	init_philos(char **argv, t_philo *philos, t_waiter *waiter,
 		philos[i].right_fork = &forks[(i + 1) % waiter->number_of_philosophers];
 		philos[i].waiter = waiter;
 		if (pthread_mutex_init(&philos[i].stomach, NULL) != 0)
-			clean_mutexes("Error : Failed to init mutex", waiter, philos,
-				forks, 4);
+			clean_error("Error : Failed to init mutex", waiter, forks, 5);
 		i++;
 	}
 }
 
-void clean_forks(pthread_mutex_t *forks, int i)
+void	clean_forks(pthread_mutex_t *forks, int i)
 {
-    while (i > 0)
-    {
-        i--;
-        pthread_mutex_destroy(&forks[i]);
-    }
+	while (i > 0)
+	{
+		i--;
+		pthread_mutex_destroy(&forks[i]);
+	}
 }
 
 void	init_forks(pthread_mutex_t *forks, int philo_nbr, t_waiter *waiter)
@@ -69,10 +68,9 @@ void	init_forks(pthread_mutex_t *forks, int philo_nbr, t_waiter *waiter)
 	while (i < philo_nbr)
 	{
 		if (pthread_mutex_init(&forks[i], NULL) != 0)
-        {
-            clean_forks(forks, i);
-			clean_mutexes("Error : Failed to init mutex", waiter, NULL,
-				forks, 4);
+		{
+			clean_forks(forks, i);
+			clean_error("Error : Failed to init mutex", waiter, NULL, 4);
 		}
 		i++;
 	}
@@ -84,15 +82,11 @@ void	init_waiter(t_waiter *waiter, int philo_nbr)
 	waiter->time_to_stop = false;
 	waiter->philos_full = 0;
 	if (pthread_mutex_init(&waiter->full_mutex, NULL) != 0)
-		clean_mutexes("Error : Failed to init mutex", waiter, NULL,
-			NULL, 0);
+		clean_error("Error : Failed to init mutex", waiter, NULL, 0);
 	if (pthread_mutex_init(&waiter->write_mutex, NULL) != 0)
-		clean_mutexes("Error : Failed to init mutex", waiter, NULL,
-			NULL, 1);
+		clean_error("Error : Failed to init mutex", waiter, NULL, 1);
 	if (pthread_mutex_init(&waiter->dead_mutex, NULL) != 0)
-		clean_mutexes("Error : Failed to init mutex", waiter, NULL,
-			NULL, 2);
+		clean_error("Error : Failed to init mutex", waiter, NULL, 2);
 	if (pthread_mutex_init(&waiter->eating_mutex, NULL) != 0)
-		clean_mutexes("Error : Failed to init mutex", waiter, NULL,
-			NULL, 3);
+		clean_error("Error : Failed to init mutex", waiter, NULL, 3);
 }

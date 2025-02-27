@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:13 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/24 18:59:45 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 12:45:48 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,4 +67,10 @@ void	ft_putstr_fd(char *s, int fd)
 		write(fd, &s[i], 1);
 		i++;
 	}
+}
+
+void	write_error(char *str)
+{
+	ft_putstr_fd(str, 2);
+	ft_putstr_fd("\n", 2);
 }

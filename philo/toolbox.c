@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:20:51 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/26 17:17:28 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 14:19:11 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ struct timeval {
 	time_t      tv_sec;  // Seconds since January 1, 1970
 	suseconds_t tv_usec; // Microseconds (0 to 999999)
 };
+In a division, the type of the result is determined
+by the type of the numerator (in this case, tv.tv_usec)
+so no need to cast in long long
 */
 long long	get_current_time(void)
 {
@@ -69,7 +72,7 @@ int	manage_time(t_philo *philos, int time_to_wait)
 	start_time = get_current_time();
 	while (1)
 	{
-		usleep(50);
+		usleep(100);
 		elapsed_time = get_current_time() - start_time;
 		if (elapsed_time >= time_to_wait)
 			break ;
@@ -80,4 +83,16 @@ int	manage_time(t_philo *philos, int time_to_wait)
 	}
 	usleep(500);
 	return (0);
+}
+
+void	clean_remaining(t_philo *philos, t_waiter *waiter)
+{
+	int	i;
+
+	i = 0;
+	while (i < waiter->number_of_philosophers)
+	{
+		pthread_mutex_destroy(&philos[i].stomach);
+		i++;
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:03 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/26 20:56:57 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 12:47:58 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void				init_forks(pthread_mutex_t *forks, int philo_nbr,
 						t_waiter *waiter);
 void				init_waiter(t_waiter *waiter, int philo_nbr);
 
-void				clean_mutexes(char *str, t_waiter *waiter, t_philo *philos,
+void				clean_error(char *str, t_waiter *waiter,
 						pthread_mutex_t *forks, int mode);
 void				dinner(t_philo *philos, t_waiter *waiter,
 						pthread_mutex_t *forks);
@@ -95,10 +95,12 @@ void				ft_err(t_error error);
 long long			get_current_time(void);
 void				print_state_change(t_philo *philos, char *str);
 int					manage_time(t_philo *philos, int time_to_wait);
+void				clean_remaining(t_philo *philos, t_waiter *waiter);
 
 long				ft_atol(const char *nptr);
 int					ft_atoi(const char *nptr);
 void				ft_putstr_fd(char *s, int fd);
+void				write_error(char *str);
 
 int					philo_starved(t_philo *philos, long long time_to_die);
 int					philo_dead(t_philo *philos);

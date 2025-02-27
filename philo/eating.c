@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:24 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/26 19:55:08 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 14:00:54 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void	update_meal_status(t_philo *philos)
 	pthread_mutex_lock(&philos->stomach);
 	philos->last_meal = get_current_time();
 	philos->eaten_times++;
-	if (philos->max_eat != -1 && philos->eaten_times >= philos->max_eat)
+	if (philos->max_eat != -1 && philos->eaten_times == philos->max_eat)
 	{
 		pthread_mutex_lock(&philos->waiter->full_mutex);
 		philos->waiter->philos_full++;
