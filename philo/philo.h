@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:03 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/27 12:47:58 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 16:20:44 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ typedef struct s_waiter
 	pthread_mutex_t	dead_mutex;
 	pthread_mutex_t	write_mutex;
 	pthread_mutex_t	full_mutex;
-	pthread_mutex_t	eating_mutex;
 	int				number_of_philosophers;
 	bool			time_to_stop;
 	int				philos_full;
@@ -53,6 +52,7 @@ typedef struct s_philo
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	pthread_mutex_t	stomach;
+	pthread_mutex_t	eating_mutex;
 	t_waiter		*waiter;
 }					t_philo;
 // PARSING//
@@ -95,7 +95,8 @@ void				ft_err(t_error error);
 long long			get_current_time(void);
 void				print_state_change(t_philo *philos, char *str);
 int					manage_time(t_philo *philos, int time_to_wait);
-void				clean_remaining(t_philo *philos, t_waiter *waiter);
+void				clean_remaining(t_philo *philos, t_waiter *waiter,
+						int mode);
 
 long				ft_atol(const char *nptr);
 int					ft_atoi(const char *nptr);

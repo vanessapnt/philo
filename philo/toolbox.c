@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:20:51 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/27 14:19:11 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 15:59:52 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,11 +81,10 @@ int	manage_time(t_philo *philos, int time_to_wait)
 			return (1);
 		}
 	}
-	usleep(500);
 	return (0);
 }
 
-void	clean_remaining(t_philo *philos, t_waiter *waiter)
+void	clean_remaining(t_philo *philos, t_waiter *waiter, int mode)
 {
 	int	i;
 
@@ -93,6 +92,14 @@ void	clean_remaining(t_philo *philos, t_waiter *waiter)
 	while (i < waiter->number_of_philosophers)
 	{
 		pthread_mutex_destroy(&philos[i].stomach);
+		i++;
+	}
+	if (mode < 7)
+		exit(1);
+	i = 0;
+	while (i < waiter->number_of_philosophers)
+	{
+		pthread_mutex_destroy(&philos[i].eating_mutex);
 		i++;
 	}
 }

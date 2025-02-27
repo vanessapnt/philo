@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:24 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/27 14:00:54 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 15:41:45 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,21 +57,21 @@ int	philo_eats(t_philo *philos, int time_to_eat)
 	if (must_stop(philos))
 		return (1);
 	lock_forks(philos);
-	pthread_mutex_lock(&philos->waiter->eating_mutex);
+	pthread_mutex_lock(&philos->eating_mutex);
 	philos->is_eating = true;
-	pthread_mutex_unlock(&philos->waiter->eating_mutex);
+	pthread_mutex_unlock(&philos->eating_mutex);
 	update_meal_status(philos);
 	print_state_change(philos, "is eating");
 	if (manage_time(philos, time_to_eat) || must_stop(philos))
 	{
-		pthread_mutex_lock(&philos->waiter->eating_mutex);
+		pthread_mutex_lock(&philos->eating_mutex);
 		philos->is_eating = false;
-		pthread_mutex_unlock(&philos->waiter->eating_mutex);
+		pthread_mutex_unlock(&philos->eating_mutex);
 		return (unlock_forks(philos), 1);
 	}
-	pthread_mutex_lock(&philos->waiter->eating_mutex);
+	pthread_mutex_lock(&philos->eating_mutex);
 	philos->is_eating = false;
-	pthread_mutex_unlock(&philos->waiter->eating_mutex);
+	pthread_mutex_unlock(&philos->eating_mutex);
 	unlock_forks(philos);
 	return (0);
 }

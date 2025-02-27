@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:58:18 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/27 14:32:49 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 15:19:19 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ int	is_eating(t_philo *philos)
 {
 	int	eating_status;
 
-	pthread_mutex_lock(&philos->waiter->eating_mutex);
+	pthread_mutex_lock(&philos->eating_mutex);
 	eating_status = philos->is_eating;
-	pthread_mutex_unlock(&philos->waiter->eating_mutex);
+	pthread_mutex_unlock(&philos->eating_mutex);
 	return (eating_status);
 }
 

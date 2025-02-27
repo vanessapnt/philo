@@ -6,7 +6,7 @@
 /*   By: varodrig <varodrig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:57:38 by varodrig          #+#    #+#             */
-/*   Updated: 2025/02/27 12:43:56 by varodrig         ###   ########.fr       */
+/*   Updated: 2025/02/27 16:19:53 by varodrig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ static void	philo_parameters(int i, char **argv, t_philo *philos)
 		philos[i].max_eat = ft_atoi(argv[5]);
 	else
 		philos[i].max_eat = -1;
+	if (philos[i].time_to_eat > philos[i].time_to_sleep)
+		philos[i].time_to_think = (philos[i].time_to_eat
+				- philos[i].time_to_sleep) + 1;
+	else
+		philos[i].time_to_think = 1;
 }
 
 void	init_philos(char **argv, t_philo *philos, t_waiter *waiter,
@@ -32,11 +37,6 @@ void	init_philos(char **argv, t_philo *philos, t_waiter *waiter,
 	while (i < waiter->number_of_philosophers)
 	{
 		philo_parameters(i, argv, philos);
-		if (philos[i].time_to_eat > philos[i].time_to_sleep)
-			philos[i].time_to_think = (philos[i].time_to_eat
-					- philos[i].time_to_sleep) + 1;
-		else
-			philos[i].time_to_think = 1;
 		philos[i].id = i + 1;
 		philos[i].is_eating = false;
 		philos[i].start_time = get_current_time();
@@ -47,6 +47,11 @@ void	init_philos(char **argv, t_philo *philos, t_waiter *waiter,
 		philos[i].waiter = waiter;
 		if (pthread_mutex_init(&philos[i].stomach, NULL) != 0)
 			clean_error("Error : Failed to init mutex", waiter, forks, 5);
+		if (pthread_mutex_init(&philos[i].eating_mutex, NULL) != 0)
+		{
+			clean_error("Error : Failed to init mutex", waiter, forks, 6);
+			clean_remaining(philos, philos->waiter, 6);
+		}
 		i++;
 	}
 }
@@ -87,6 +92,4 @@ void	init_waiter(t_waiter *waiter, int philo_nbr)
 		clean_error("Error : Failed to init mutex", waiter, NULL, 1);
 	if (pthread_mutex_init(&waiter->dead_mutex, NULL) != 0)
 		clean_error("Error : Failed to init mutex", waiter, NULL, 2);
-	if (pthread_mutex_init(&waiter->eating_mutex, NULL) != 0)
-		clean_error("Error : Failed to init mutex", waiter, NULL, 3);
 }
